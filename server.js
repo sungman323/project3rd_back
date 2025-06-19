@@ -11,7 +11,7 @@ const SECRET_KEY = 'DiGong';
 const uploads = multer({ dest: 'uploads/' }); 
 
 connection = mysql.createConnection({
-  host:'localhost',
+  host:'db-react-mariadb',
   user:'root',
   password:'1234',
   database:'kdt'
