@@ -11,7 +11,7 @@ const SECRET_KEY = 'DiGong';
 const uploads = multer({ dest: 'uploads/' }); 
 
 connection = mysql.createConnection({
-  host:'db-react-mariadb',
+  host:'localhost',
   user:'root',
   password:'1234',
   database:'kdt'
@@ -50,7 +50,7 @@ app.post('/login', async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, email: user.email, name: user.name, nickname: user.nickname, img: user.img },
+      { id: user.id, email: user.email, name: user.name, nickname: user.nickname, img: user.img, introduce: user.introduce },
       SECRET_KEY
     );
     res.json({ token });
@@ -438,6 +438,48 @@ app.get('/liked-posts/:user_id', (req, res) => {
       return res.status(500).json({ error: '좋아요 목록 로딩 실패' });
     }
     res.json(results);
+  });
+});
+
+//유저 정보 불러오기
+app.get('/profileupdate/:id', (req, res) => {
+  const userId = req.params.id;
+
+  const sql = `
+    SELECT id, name, email, nickname, introduce
+    FROM p3_users
+    WHERE id = ?;
+  `;
+
+  connection.query(sql, [userId], (err, results) => {
+    if (err) {
+      console.error('유저 정보 불러오기 실패:', err);
+      return res.status(500).json({ error: '서버 오류' });
+    }
+    if (results.length === 0) {
+      return res.status(404).json({ error: '유저를 찾을 수 없습니다.' });
+    }
+    res.json(results[0]);
+  });
+});
+
+// 유저 정보 수정
+app.put('/profileupdate/:id', (req, res) => {
+  const userId = req.params.id;
+  const { name, nickname, introduce } = req.body;
+
+  const sql = `
+    UPDATE p3_users
+    SET name = ?, nickname = ?, introduce = ?
+    WHERE id = ?;
+  `;
+
+  connection.query(sql, [name, nickname, introduce, userId], (err, results) => {
+    if (err) {
+      console.error('유저 정보 수정 실패:', err);
+      return res.status(500).json({ error: '서버 오류' });
+    }
+    res.json({ message: '유저 정보가 성공적으로 수정되었습니다.' });
   });
 });
 
